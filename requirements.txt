@@ -1,0 +1,5 @@
+customtkinter==5.2.2
+torch==1.12.1+cu116
+torch==2.6.0+cu126
+torchvision==0.13.1+cu116
+torchvision==0.21.0+cu126
