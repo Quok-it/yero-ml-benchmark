@@ -24,11 +24,17 @@
 # The transformer engine autocast is used.
 # '''
 # torch.backends.cudnn.enabled = True
-# torch.backends.cudnn.deterministic = True  # Not safe as some models have components that are indeterministic, and causes issues
-# torch.use_deterministic_algorithms(True, warn_only=True)  # this is repeated two more times in the warning/profiler blocks
 # torch.backends.cudnn.benchmark = False
-# torch.set_float32_matmul_precision('medium')
+# torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.allow_tf32 = True
+#
+# torch.backends.cuda.matmul.allow_tf32 = True
+# torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True
+# torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True
+#
+# torch.use_deterministic_algorithms(True, warn_only=True)  # this is repeated two more times in the warning/profiler blocks
+#
+# torch.set_float32_matmul_precision('medium')
 #
 # '''
 # Captures the current statuses of the NVIDIA GPU being used to be recorded.
