@@ -104,9 +104,17 @@ def cuda_profiler_base(queue, stop_event, model, device, inputs, targets, criter
     This specific python scrypt is named cuda_profiler_base for the above reason, as a base level for a NVIDIA GPU to start out.
     '''
     torch.backends.cudnn.enabled = True
-    torch.backends.cudnn.deterministic = True
-    torch.use_deterministic_algorithms(True, warn_only=True)  # this is repeated two more times in the warning/profiler blocks
     torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.allow_tf32 = False
+
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
+    torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = False
+
+    torch.use_deterministic_algorithms(True, warn_only=True)  # this is repeated two more times in the warning/profiler blocks
+
+    torch.set_float32_matmul_precision('highest')
 
     model.to(device)
     inputs, targets = inputs.to(device), targets.to(device)

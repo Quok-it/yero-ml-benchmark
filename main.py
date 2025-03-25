@@ -1,4 +1,3 @@
-import os
 from gui.app import App
 import faulthandler
 faulthandler.enable()

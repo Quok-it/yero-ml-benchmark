@@ -100,13 +100,19 @@ def cuda_profiler_beyond(queue, stop_event, model, device, inputs, targets, crit
     Below sets internal cuda properties to ensure maximum deterministic currently possible. 
     In addition, limitations are less restricted for NVIDIA GPUs that may have advanced hardware functionality such as tf32/bf16.
     This specific python scrypt is named cuda_profiler_beyond for the above reason, as a beyond level for a NVIDIA GPU to be at.
-    Autocast and dtype=torch.bfloat16 are used in addition to tf32
+    Autocast and dtype=torch.float16 are used in addition to tf32
     '''
     torch.backends.cudnn.enabled = True
-    torch.backends.cudnn.deterministic = False  # Not safe as some models have components that are indeterministic, and causes issues
-    torch.use_deterministic_algorithms(False)  # this is repeated two more times in the warning/profiler blocks
     torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.deterministic = False
     torch.backends.cudnn.allow_tf32 = True
+
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True
+    torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True
+
+    torch.use_deterministic_algorithms(False, warn_only=True)  # this is repeated two more times in the warning/profiler blocks
+
     torch.set_float32_matmul_precision('medium')
 
     '''
