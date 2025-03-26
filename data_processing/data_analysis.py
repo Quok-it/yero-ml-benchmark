@@ -730,10 +730,10 @@ def create_table_plots(json_paths, results_type):
                     sub_dfs.append(sub_df)
 
                 for i, s_df in enumerate(sub_dfs):
-                    height_plot = len(s_df.index) * 2 + 5
+                    height_plot = len(s_df.index) * 3
 
                     fig, axes = plt.subplots(2, 2,
-                                             figsize=(30, height_plot))
+                                             figsize=(10, height_plot))
 
                     s_df_cols = s_df.columns
 
@@ -754,7 +754,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -793,7 +793,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -815,7 +815,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -837,7 +837,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -860,7 +860,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -898,7 +898,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -920,7 +920,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -942,7 +942,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -965,7 +965,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1004,7 +1004,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1027,7 +1027,7 @@ def create_table_plots(json_paths, results_type):
 
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1049,7 +1049,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1072,7 +1072,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1111,7 +1111,7 @@ def create_table_plots(json_paths, results_type):
                         axes[0, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1133,7 +1133,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 0].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1156,7 +1156,7 @@ def create_table_plots(json_paths, results_type):
                         axes[1, 1].invert_yaxis()
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01,
+                        plt.text(0.5, 0.999,
                                  'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
@@ -1166,10 +1166,10 @@ def create_table_plots(json_paths, results_type):
                                  fontweight='bold',
                                  transform=ax4.transAxes)
 
-                    plt.subplots_adjust(wspace=1, hspace=1)
+                    plt.subplots_adjust(wspace=2)
 
                     fig.savefig(f'benchmark_results/{results_type}/{timestamp}/graphs/{df_k}/{str(i)}.png',
-                                dpi=300,
+                                dpi=100,
                                 bbox_inches='tight')
 
                     plt.clf()
@@ -1190,7 +1190,7 @@ def create_table_plots(json_paths, results_type):
                         ax0.set_xlabel('Total Average Duration Rounded (ms) \nlower is better')
 
                         # Add watermark 'yero-ml-benchmark' to the plot
-                        plt.text(0, 1.01, 'yero-ml-benchmark',
+                        plt.text(0.5, 0.999, 'yero-ml-benchmark',
                                  fontsize=12,
                                  color='gray',
                                  alpha=0.8,
@@ -1219,7 +1219,7 @@ def create_table_plots(json_paths, results_type):
                         plt.gca().invert_yaxis()
 
                         plt.savefig(f'benchmark_results/{results_type}/{timestamp}/graphs/{df_k}/{str(i)}.png',
-                                    dpi=300,
+                                    dpi=100,
                                     bbox_inches='tight')
 
                         plt.clf()
@@ -1239,7 +1239,7 @@ def create_table_plots(json_paths, results_type):
                     ax0.set_xlabel('Total Calls')
 
                     # Add watermark 'yero-ml-benchmark' to the plot
-                    plt.text(0, 1.01,
+                    plt.text(0.5, 0.999,
                              'yero-ml-benchmark',
                              fontsize=12,
                              color='gray',
@@ -1269,7 +1269,7 @@ def create_table_plots(json_paths, results_type):
                     plt.gca().invert_yaxis()
 
                     plt.savefig(f'benchmark_results/{results_type}/{timestamp}/graphs/{df_k}/0.png',
-                                dpi=300,
+                                dpi=100,
                                 bbox_inches='tight')
 
                     plt.clf()
@@ -1295,7 +1295,7 @@ def create_table_plots(json_paths, results_type):
                               bbox_to_anchor=(1.0, 1),
                               loc='upper left')
 
-                    plt.text(0, 1.01,
+                    plt.text(0.5, 0.999,
                              'yero-ml-benchmark',
                              fontsize=12,
                              color='gray',
@@ -1315,7 +1315,7 @@ def create_table_plots(json_paths, results_type):
                     path.mkdir(parents=True, exist_ok=True)
 
                     plt.savefig(f'benchmark_results/{results_type}/{timestamp}/graphs/Combined {df_k}s/0.png',
-                                dpi=300,
+                                dpi=100,
                                 bbox_inches='tight')  # Save with high resolution
 
                     plt.clf()
