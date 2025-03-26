@@ -193,17 +193,31 @@ def cuda_profiler_mid(queue, stop_event, model, device, inputs, targets, criteri
     power_draw_list = []
     device_temp_list = []
     total_memory_str = ''
-    warning_messages = ""
+    warning_messages = ''
+    error_caught = ''
+
+    queue.put("Starting Training")
+
+    try:
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            outputs = model(inputs)
+
+    except torch.cuda.OutOfMemoryError as e:
+        vram_limit_hit = True
+        error_caught = e
+        queue.put("NO DATA. Model exceeded GPU's VRAM.\n"
+                  f"Error: {e}")
+
+    except Exception as e:
+        edge_model_case = True
+        error_caught = e
+        queue.put("NO DATA. Model has an issue with the input size or another cause. "
+                  "Check model documentation for input size.\n"
+                  f"Error: {e}")
 
     '''
     Warnings are caught and recorded in each profiler component to show any non-deterministic kernel calls made.
     '''
-
-    queue.put("Starting Training")
-
-    with torch.autocast(device_type="cuda", dtype=torch.float16):
-        outputs = model(inputs)
-
     with warnings.catch_warnings(record=True) as caught_warnings:
         warnings.simplefilter("always")
 
@@ -305,14 +319,17 @@ def cuda_profiler_mid(queue, stop_event, model, device, inputs, targets, criteri
 
             except torch.cuda.OutOfMemoryError as e:
                 vram_limit_hit = True
+                error_caught = e
                 queue.put("NO DATA. Model exceeded GPU's VRAM.\n"
                           f"Error: {e}")
 
             except Exception as e:
+                edge_model_case = True
+                error_caught = e
                 queue.put("NO DATA. Model has an issue with the input size or another cause. "
                           "Check model documentation for input size.\n"
                           f"Error: {e}")
-                edge_model_case = True
+
 
 
             captured_warnings = set([str(warn_m.message) for warn_m in caught_warnings])
@@ -335,11 +352,13 @@ def cuda_profiler_mid(queue, stop_event, model, device, inputs, targets, criteri
         else:
             with open(profile_output, "w") as f:
                 f.write(f"{device_id}\nNO DATA. Model has an issue with the input size or another cause. "
-                        f"Check model documentation for input size.")
+                        f"Check model documentation for input size.\n"
+                        f"Error: {error_caught}")
 
     else:
         with open(profile_output, "w") as f:
-            f.write(f"{device_id}\nNO DATA. Model exceeded GPU's VRAM.")
+            f.write(f"{device_id}\nNO DATA. Model exceeded GPU's VRAM.\n"
+                    f"Error: {error_caught}")
 
     if stop_event.is_set():
         del model
@@ -362,7 +381,8 @@ def cuda_profiler_mid(queue, stop_event, model, device, inputs, targets, criteri
     power_draw_list = []
     device_temp_list = []
     total_memory_str = ''
-    warning_messages = ""
+    warning_messages = ''
+    error_caught = ''
 
     queue.put("Starting Inference")
 
@@ -420,14 +440,17 @@ def cuda_profiler_mid(queue, stop_event, model, device, inputs, targets, criteri
 
             except torch.cuda.OutOfMemoryError as e:
                 vram_limit_hit = True
+                error_caught = e
                 queue.put("NO DATA. Model exceeded GPU's VRAM.\n"
                           f"Error: {e}")
 
             except Exception as e:
+                edge_model_case = True
+                error_caught = e
                 queue.put("NO DATA. Model has an issue with the input size or another cause. "
                           "Check model documentation for input size.\n"
                           f"Error: {e}")
-                edge_model_case = True
+
 
 
             captured_warnings = set([str(warn_m.message) for warn_m in caught_warnings])
@@ -451,10 +474,12 @@ def cuda_profiler_mid(queue, stop_event, model, device, inputs, targets, criteri
         else:
             with open(profile_output, "w") as f:
                 f.write(
-                    f"{device_id}\nNO DATA. Model has an issue with the input size or another cause. Check model documentation for input size.")
+                    f"{device_id}\nNO DATA. Model has an issue with the input size or another cause. Check model documentation for input size.\n"
+                    f"Error: {error_caught}")
     else:
         with open(profile_output, "w") as f:
-            f.write(f"{device_id}\nNO DATA. Model exceeded GPU's VRAM.")
+            f.write(f"{device_id}\nNO DATA. Model exceeded GPU's VRAM.\n"
+                    f"Error: {error_caught}")
 
 
     del model

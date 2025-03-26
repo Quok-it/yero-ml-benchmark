@@ -16,6 +16,7 @@
 #
 # '''
 # At the moment, importing the transformer_engine is tricky, so this script will not be used for benchmarking.
+# This requires error_caught for a cold start and collecting the error in the output file.
 #
 # Below sets internal cuda properties to ensure maximum deterministic currently possible.
 # In addition, limitations are less restricted for NVIDIA GPUs that may have advanced hardware functionality such as tf32/bf16.
