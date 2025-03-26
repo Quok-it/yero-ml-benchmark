@@ -5,8 +5,8 @@ import customtkinter as ctk
 import time
 import subprocess
 import importlib
-import torchvision.models as models
-import inspect
+from torchvision.models import list_models
+import torchvision
 import os
 
 os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
@@ -37,11 +37,11 @@ def get_nvidia_device_id(device):
     except Exception as e:
         return f"nvidia-smi command not found. Make sure the NVIDIA driver is installed. Error: {e}"
 
-def start_benchmark(queue, stop_event, benchmark_file, benchmark_name, device, gpu_name):
+def start_benchmark(queue, stop_event, benchmark_file, model_name, device, gpu_name):
     start_time = time.time()
 
     benchmarking = importlib.import_module(benchmark_file)
-    benchmarking.run(queue, stop_event, benchmark_name, device, gpu_name, start_time)
+    benchmarking.run(queue, stop_event, model_name, device, gpu_name, start_time)
 
     stop_event.wait()
 
@@ -141,7 +141,7 @@ class MyActionFrame(ctk.CTkFrame):
                         continue
 
     def run_benchmark(self):
-        benchmark_name = self.mybenchmarkframe.get().split('~')[0]
+        model_name = self.mybenchmarkframe.get().split('~')[0]
         benchmark_file = self.mybenchmarkframe.get().split('~')[1]
         gpu_num = self.mygpuframe.get()
         cuda_gpus_count = self.mygpuframe.cuda_gpus_count
@@ -154,7 +154,7 @@ class MyActionFrame(ctk.CTkFrame):
         else:
             gpu_name = 'GPU DEVICE'
 
-        if benchmark_name != "":
+        if model_name != "":
 
             if self.running != True:
 
@@ -164,7 +164,7 @@ class MyActionFrame(ctk.CTkFrame):
                                                       f"==============================================================="
                                                       f"===============================================================")
                 self.mystatusframe.update_status(text=f"\n")
-                self.mystatusframe.update_status(text=f"Running {benchmark_name} benchmark for\n{gpu_name}")
+                self.mystatusframe.update_status(text=f"Running {model_name} benchmark for\n{gpu_name}")
                 self.mystatusframe.update_status(text=f"\n")
                 self.mystatusframe.update_status(text=f"==============================================================="
                                                       f"===============================================================\n"
@@ -182,7 +182,7 @@ class MyActionFrame(ctk.CTkFrame):
                                                        args=(self.queue,
                                                              self.stop_event,
                                                              benchmark_file,
-                                                             benchmark_name,
+                                                             model_name,
                                                              device,
                                                              gpu_name),
                                                        daemon=True)
@@ -293,19 +293,17 @@ class MyBenchmarkFrame(ctk.CTkFrame):
                                                fg_color="#141414")
 
         model_count = 0
-        for model_name in dir(models):
-            model_fn = getattr(models, model_name)
-            if callable(model_fn) and not isinstance(model_fn, type):
-                if "weights" in inspect.signature(model_fn).parameters:
-                    bench_model = ctk.CTkRadioButton(self.my_benchmark_frame,
-                                                     text=model_name,
-                                                     value=f"{model_name}~cuda_benchmarks.bmk_img_class",
-                                                     variable=self.variable,
-                                                     text_color='#FFB000',
-                                                     font=(font_type['family'], font_type['size']))
-                    bench_model.grid(row=model_count, column=0, padx=10, pady=10, sticky="nsew")
-                    model_count += 1
-                    self.benchmark.append(bench_model)
+        classification_models = list_models(module=torchvision.models)
+        for model_name in classification_models:
+            bench_model = ctk.CTkRadioButton(self.my_benchmark_frame,
+                                             text=model_name,
+                                             value=f"{model_name}~cuda_benchmarks.bmk_img_class",
+                                             variable=self.variable,
+                                             text_color='#FFB000',
+                                             font=(font_type['family'], font_type['size']))
+            bench_model.grid(row=model_count, column=0, padx=10, pady=10, sticky="nsew")
+            model_count += 1
+            self.benchmark.append(bench_model)
 
         self.scrollable_canvas.add_content(self.my_benchmark_frame, row=0, column=0)
 
