@@ -731,9 +731,11 @@ def create_table_plots(json_paths, results_type):
 
                 for i, s_df in enumerate(sub_dfs):
                     height_plot = len(s_df.index) * 3
+                    if height_plot < 25:
+                        height_plot = 25
 
                     fig, axes = plt.subplots(2, 2,
-                                             figsize=(10, height_plot))
+                                             figsize=(15, height_plot))
 
                     s_df_cols = s_df.columns
 
@@ -1183,7 +1185,7 @@ def create_table_plots(json_paths, results_type):
                                         y='Total Average Duration Rounded (ms)',
                                         kind='barh',
                                         title=df_k + '\n ' + s_df.loc[s_df.index[0], df_k],
-                                        figsize=(30, height_plot))
+                                        figsize=(15, height_plot))
 
                         ax0.get_legend().remove()
                         ax0.set_ylabel('GPU')
@@ -1232,7 +1234,7 @@ def create_table_plots(json_paths, results_type):
                                     y=df_k,
                                     kind='barh',
                                     title=df_k + 'Per Epoch',
-                                    figsize=(30, height_plot))
+                                    figsize=(15, height_plot))
 
                     ax0.get_legend().remove()
                     ax0.set_ylabel('GPU')
@@ -1278,7 +1280,7 @@ def create_table_plots(json_paths, results_type):
                 if df_k == 'GPU User Annotation':
                     height_plot = len(df_v['GPU'].unique()) * 2 + 5
 
-                    fig, ax = plt.subplots(figsize=(30, height_plot))
+                    fig, ax = plt.subplots(figsize=(15, height_plot))
 
                     df_v.groupby(['GPU', 'GPU User Annotation'], sort=False) \
                         ['Average Duration Rounded (ms)'].sum() \
