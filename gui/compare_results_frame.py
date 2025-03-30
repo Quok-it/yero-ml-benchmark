@@ -239,8 +239,11 @@ class MyResultsScriptFrame(ctk.CTkFrame):
 
                                         if sorted(gpu_id_needed) == sorted(check_files):
                                             shared_scripts.append(str(script_folder).split('/')[-1])
-                                            self.scripts_available.append(str(script_folder).split('/')[-1])
-                if shared_scripts != []:
+
+                if shared_scripts != [] and self.scripts_available == []:
+                    self.scripts_available = list(set(shared_scripts))
+
+                elif shared_scripts != []:
                     self.scripts_available = list(set(self.scripts_available) & set(shared_scripts))
 
         self.scripts_available.sort()
@@ -403,8 +406,11 @@ class MyResultsModelFrame(ctk.CTkFrame):
 
                                             if sorted(gpu_id_needed) == sorted(check_files):
                                                 shared_models.append(str(model_folder).split('/')[-1])
-                                                self.models_available.append(str(model_folder).split('/')[-1])
-                            if shared_models != []:
+
+                            if shared_models != [] and self.models_available == []:
+                                self.models_available = list(set(shared_models))
+
+                            elif shared_models != []:
                                 self.models_available = list(set(self.models_available) & set(shared_models))
 
         self.models_available.sort()
@@ -572,9 +578,13 @@ class MyResultsParamsFrame(ctk.CTkFrame):
 
                                                 if sorted(gpu_id_needed) == sorted(check_files):
                                                     shared_params.append(str(params_folder).split('/')[-1])
-                                                    self.params_available.append(str(params_folder).split('/')[-1])
-                                        if shared_params != []:
+
+                                        if shared_params != [] and self.params_available == []:
+                                            self.params_available = list(set(shared_params))
+
+                                        elif shared_params != []:
                                             self.params_available = list(set(self.params_available) & set(shared_params))
+
         self.params_available = list(set(self.params_available))
         self.params_available.sort()
 
@@ -753,13 +763,11 @@ class MyResultsExecuteFrame(ctk.CTkFrame):
                                                                                       .split('/')[-1]
                                                                                       .split('.')[0]
                                                                                       .split('_')[-1])
-                                                                self.execute_available.append(
-                                                                    str(trace_file)
-                                                                    .split('/')[-1]
-                                                                    .split('.')[0]
-                                                                    .split('_')[-1])
 
-                                                    if shared_execute != []:
+                                                    if shared_execute != [] and self.execute_available == []:
+                                                        self.execute_available = list(set(shared_execute))
+
+                                                    elif shared_execute != []:
                                                         self.execute_available = list(set(self.execute_available) & set(shared_execute))
 
         self.execute_available.sort()
