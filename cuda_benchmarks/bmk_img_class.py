@@ -121,8 +121,8 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
-
                 benchmark_count += 1
+
                 profile_output = f"benchmarked/{gpu_name}/base/{model_name}/{batch_size_str}_{image_size_str}/"
                 path = Path(profile_output)
                 path.mkdir(parents=True, exist_ok=True)
@@ -143,7 +143,23 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                     bad_models.append(model_name)
 
 
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('\n')
+                queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loading.')
+
+                model = get_model(model_name, weights='DEFAULT')
+                optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+                queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loaded.')
+                queue.put('\n')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+
                 benchmark_count += 1
+
                 profile_output = f"benchmarked/{gpu_name}/mid/{model_name}/{batch_size_str}_{image_size_str}/"
                 path = Path(profile_output)
                 path.mkdir(parents=True, exist_ok=True)
@@ -164,7 +180,23 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                     bad_models.append(model_name)
 
 
+                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # queue.put('\n')
+                # queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loading.')
+                #
+                # model = get_model(model_name, weights='DEFAULT')
+                # optimizer = optim.Adam(model.parameters(), lr=1e-3)
+                #
+                # queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loaded.')
+                # queue.put('\n')
+                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+
                 # benchmark_count += 1
+
                 # profile_output = f"benchmarked/{gpu_name}/peak/{model_name}/{batch_size_str}_{image_size_str}/"
                 # path = Path(profile_output)
                 # path.mkdir(parents=True, exist_ok=True)
@@ -186,8 +218,23 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                 # if edge_model_case == True:
                 #     bad_models.append(model_name)
 
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('\n')
+                queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loading.')
+
+                model = get_model(model_name, weights='DEFAULT')
+                optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+                queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loaded.')
+                queue.put('\n')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
                 benchmark_count += 1
+
                 profile_output = f"benchmarked/{gpu_name}/beyond/{model_name}/{batch_size_str}_{image_size_str}/"
                 path = Path(profile_output)
                 path.mkdir(parents=True, exist_ok=True)
