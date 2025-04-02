@@ -1,7 +1,7 @@
 <h1 align="center">yero-ml-benchmark</h1>
 
 <p align="center">
-  A training and inference benchmarking tool for machine learning.
+  A GPU benchmarking tool using machine learning.
 </p>
 
 ***
