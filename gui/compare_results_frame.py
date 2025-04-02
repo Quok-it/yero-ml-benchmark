@@ -773,7 +773,7 @@ class MyResultsExecuteFrame(ctk.CTkFrame):
         self.execute_available.sort()
 
         self.radio_execute_refresh = ctk.CTkCheckBox(self.radio_frame,
-                                                     text='Refresh the Params List',
+                                                     text='Refresh the Execute List',
                                                      onvalue='Refreshing',
                                                      offvalue='ignore',
                                                      variable=self.variable,
