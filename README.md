@@ -19,10 +19,19 @@ This benchmark aims to <b>relate</b> with others who understands the basics that
 while maintaining <b>reproducibility</b> of performance regardless of different systems.
 <br>
 <br>
-This benchmark is not indicative of the performance of the model itself in terms of accuracy, precision, and other metrics.*
+Note: This benchmark is not indicative of the performance of the model itself in terms of accuracy, precision, and other metrics.
 
 ## YouTube Video
-Here is an indepth overview of yero-ml-benchmark, including an example comparing a RTX 3090 to a Titan X Pascal: 
+Here is a video overview of yero-ml-benchmark, including an example comparing a RTX 3090 to a Titan X Pascal and an example of a RTX 3090 on two different systems: 
+
+## Install
+To install the required packages, please do:
+
+```
+pip install -r requirements.txt
+```
+
+You will also need to install python tkinter on your system. The GUI is based on tkinter.
 
 ## Current Support
 * Linux
@@ -54,7 +63,7 @@ Currently there are three types of benchmark scripts: base, mid, and beyond.
 The results are based on 100 epochs recorded during training and inference of a model under a specific combination of scripts and paramaters.
 Results may vary as the user can select different models to use for benchmarking.
 <br>
-They results are shown in a text table and graphs. Current results pertain to:
+The results are shown in a text table and in graphs. Current results show:
 * Model training/inference forward pass, backward pass, optimization, and loss calculation
 * Kernels performance
 * Cuda runtimes
@@ -63,7 +72,7 @@ They results are shown in a text table and graphs. Current results pertain to:
 ## Limitations
 Only one GPU can be benchmarked at a time.
 <br>
-A system must have a CPU with two cores.
+A system must have a CPU with minimum of two cores.
 
 ## Future Improvements
 * Support for AMD, Intel, Apple, and CPU to benchmark
@@ -83,7 +92,7 @@ A system must have a CPU with two cores.
 ***
 ![Image](https://github.com/user-attachments/assets/de88b856-401b-44c1-9869-a6dbfee3fb65)
 
-## Some Example Results
+## Some Graph Results
 ![Image](https://github.com/user-attachments/assets/b275f671-7616-45de-8860-d5ba1d5714b5)
 ***
 ***
