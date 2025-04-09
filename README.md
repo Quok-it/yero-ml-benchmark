@@ -23,6 +23,8 @@ Note: This benchmark is not indicative of the performance of the model itself in
 
 ## YouTube Video
 Here is a video overview of yero-ml-benchmark, including an example comparing a RTX 3090 to a Titan X Pascal and an example of a RTX 3090 on two different systems: 
+<br>
+https://youtu.be/pDTQh1QfVLM
 
 ## Install
 To install the required packages, please do:
