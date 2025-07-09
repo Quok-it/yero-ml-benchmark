@@ -6,20 +6,24 @@ from pathlib import Path
 import time
 import subprocess
 import os
+from typing import Any, Union
+from torch import nn, optim as torch_optim
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event
 
 os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
 
 from cuda_benchmarks.cuda_profiler_scripts.cuda_profiler_base import cuda_profiler_base
 from cuda_benchmarks.cuda_profiler_scripts.cuda_profiler_mid import cuda_profiler_mid
-#from cuda_benchmarks.cuda_profiler_scripts.cuda_profiler_peak import cuda_profiler_peak
+# from cuda_benchmarks.cuda_profiler_scripts.cuda_profiler_peak import cuda_profiler_peak
 from cuda_benchmarks.cuda_profiler_scripts.cuda_profiler_beyond import cuda_profiler_beyond
 
-torch.hub.set_dir('./model_weights')
+torch.hub.set_dir('./model_weights') # type: ignore
 
 # bad_models is used for diagnosing models that require specific requirements.
-bad_models = []
+bad_models: list[str] = []
 
-def get_nvidia_driver():
+def get_nvidia_driver() -> str:
     try:
         result = subprocess.run(['nvidia-smi'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
@@ -36,7 +40,7 @@ def get_nvidia_driver():
     except FileNotFoundError:
         return "nvidia-smi command not found. Make sure the NVIDIA driver is installed."
 
-def get_nvidia_device_id(device):
+def get_nvidia_device_id(device: torch.device) -> str:
     try:
         result = subprocess.run(['nvidia-smi', '--query-gpu=uuid', '--format=csv,noheader,nounits'],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -56,20 +60,23 @@ def get_nvidia_device_id(device):
     except FileNotFoundError:
         return "nvidia-smi command not found. Make sure the NVIDIA driver is installed."
 
-driver_info = get_nvidia_driver()
-cudnn_version = torch.backends.cudnn.version()
+driver_info: str = get_nvidia_driver()
+cudnn_version: Union[int, None] = torch.backends.cudnn.version()
 
-def run(queue, stop_event, model_name, device, gpu_name, start_time):
-    device_id = get_nvidia_device_id(device)
-    benchmark_count = 0
+def run(
+    queue: Queue[Any],
+    stop_event: Event,
+    model_name: str,
+    device: torch.device,
+    gpu_name: str,
+    start_time: float
+) -> None:
+    device_id: str = get_nvidia_device_id(device)
+    benchmark_count: int = 0
 
-    batch_sizes = [4, 16, 64, 256]
-    image_sizes = [128]
+    batch_sizes: list[int] = [4, 16, 64, 256]
+    image_sizes: list[int] = [128]
 
-    '''
-    These are models that require specific image sizes to run.
-    More information can be found here: https://pytorch.org/vision/stable/models.html
-    '''
     if model_name in ['maxvit_t', 'vit_b_16', 'vit_b_32', 'vit_l_16', 'vit_l_32']:
         image_sizes = [224]
     elif model_name in ['inception_v3']:
@@ -77,33 +84,27 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
     elif model_name in ['vit_h_14']:
         image_sizes = [518]
 
-    '''
-    Training and Inference are considered together into a benchmark.
-    There are currently three different scripts that act as a benchmark.
-    In the future, there will be a fourth called _peak 
-    and it uses the transformer-engine to enable FP8. 
-    '''
-
-    benchmark_total = len(batch_sizes) * len(image_sizes) * 3
+    benchmark_total: int = len(batch_sizes) * len(image_sizes) * 3
 
     torch.manual_seed(42)
     gpu_name = gpu_name.split('\n')[0]
+
     for batch_size in batch_sizes:
         for image_size in image_sizes:
             transform = transforms.Compose([
                 transforms.Normalize((0.5,), (0.5,)),
             ])
 
-            inputs = torch.randn(batch_size, 3, image_size, image_size)
-            targets = torch.randint(0, 10, (batch_size,))
+            inputs: torch.Tensor = torch.randn(batch_size, 3, image_size, image_size)
+            targets: torch.Tensor = torch.randint(0, 10, (batch_size,))
 
             inputs = torch.stack([transform(inputs[i]) for i in range(batch_size)])
 
-            edge_model_case = False
+            edge_model_case: bool = False
 
-            batch_size_str = str(batch_size)
-            image_size_str = str(image_size)
-            criterion = torch.nn.CrossEntropyLoss()
+            batch_size_str: str = str(batch_size)
+            image_size_str: str = str(image_size)
+            criterion: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
 
             try:
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
@@ -112,8 +113,8 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                 queue.put('\n')
                 queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loading.')
 
-                model = get_model(model_name, weights='DEFAULT')
-                optimizer = optim.Adam(model.parameters(), lr=1e-3)
+                model: nn.Module = get_model(model_name, weights='DEFAULT')
+                optimizer: torch_optim.Optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
                 queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loaded.')
                 queue.put('\n')
@@ -123,7 +124,7 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
 
                 benchmark_count += 1
 
-                profile_output = f"benchmarked/{gpu_name}/base/{model_name}/{batch_size_str}_{image_size_str}/"
+                profile_output: str = f"benchmarked/{gpu_name}/base/{model_name}/{batch_size_str}_{image_size_str}/"
                 path = Path(profile_output)
                 path.mkdir(parents=True, exist_ok=True)
 
@@ -139,9 +140,8 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                 queue.put(f'Finished running base script.')
                 queue.put(f'\n')
                 queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                if edge_model_case == True:
+                if edge_model_case:
                     bad_models.append(model_name)
-
 
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
@@ -176,47 +176,8 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                 queue.put(f'Finished running mid script.')
                 queue.put(f'\n')
                 queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                if edge_model_case == True:
+                if edge_model_case:
                     bad_models.append(model_name)
-
-
-                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                # queue.put('\n')
-                # queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loading.')
-                #
-                # model = get_model(model_name, weights='DEFAULT')
-                # optimizer = optim.Adam(model.parameters(), lr=1e-3)
-                #
-                # queue.put(f'Model {model_name}, batch_size:{batch_size}, image_size:{image_size} is loaded.')
-                # queue.put('\n')
-                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                # queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-
-                # benchmark_count += 1
-
-                # profile_output = f"benchmarked/{gpu_name}/peak/{model_name}/{batch_size_str}_{image_size_str}/"
-                # path = Path(profile_output)
-                # path.mkdir(parents=True, exist_ok=True)
-
-                # queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                # queue.put(f'\n')
-                # queue.put(f'Running peak script.')
-                # queue.put(f'\n')
-                # queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                # edge_model_case = cuda_profiler_peak(queue, stop_event, model, device, inputs, targets,
-                #                                     criterion, optimizer, profile_output, benchmark_total,
-                #                                     benchmark_count, driver_info, batch_size, image_size,
-                #                                     device_id, start_time, cudnn_version, model_name, gpu_name)
-                # queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                # queue.put(f'\n')
-                # queue.put(f'Finished running peak script.')
-                # queue.put(f'\n')
-                # queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                # if edge_model_case == True:
-                #     bad_models.append(model_name)
 
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
                 queue.put('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
@@ -243,32 +204,24 @@ def run(queue, stop_event, model_name, device, gpu_name, start_time):
                 queue.put(f'\n')
                 queue.put(f'Running beyond script.')
                 queue.put(f'\n')
-                queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
                 edge_model_case = cuda_profiler_beyond(queue, stop_event, model, device, inputs, targets,
                                                        criterion, optimizer, profile_output, benchmark_total,
                                                        benchmark_count, driver_info, batch_size, image_size,
                                                        device_id, start_time, cudnn_version, model_name, gpu_name)
-                queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
                 queue.put(f'\n')
                 queue.put(f'Finished running beyond script.')
                 queue.put(f'\n')
-                queue.put(f'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')
-                if edge_model_case == True:
+                if edge_model_case:
                     bad_models.append(model_name)
-
 
             except Exception as e:
                 print(f'Exception occur when getting {model_name} and its weight.\n'
                       f'Error: {e}')
                 queue.put(f'Exception occur when getting {model_name} and its weight.\n'
-                      f'Error: {e}')
+                          f'Error: {e}')
                 bad_models.append(model_name)
                 continue
 
-            if stop_event.is_set():
-                break
-
-            #print(f'Found bad_models: {bad_models}')
             if stop_event.is_set():
                 break
 

@@ -1,6 +1,5 @@
 import multiprocessing
 import customtkinter as ctk
-from monkeytype import trace  # ✅ This is needed for flush!
 from gui.action_frame import MyActionFrame
 from gui.compare_results_frame import MyResultsCompareFrame
 from gui.open_results_frame import MyResultsOpenFrame
@@ -31,19 +30,13 @@ class App(ctk.CTk):
         self.tab_view.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
     def on_close(self):
-        # Let the tabs close themselves
         self.tab_view.on_close()
 
-        # ✅ Flush MonkeyType traces before shutting down
-        print("Flushing MonkeyType traces...")
-        trace.DEFAULT_TRACER.flush()
 
-        # Terminate child processes
         for proc in multiprocessing.active_children():
             proc.terminate()
             proc.join()
 
-        # Destroy the window
         self.destroy()
 
 
