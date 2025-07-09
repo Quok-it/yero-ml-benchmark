@@ -36,7 +36,7 @@ class App(ctk.CTk):
         self.destroy()
 
 class MyTabView(ctk.CTkTabview):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: App, **kwargs):
         super().__init__(master, **kwargs)
 
         benchmarker_tab = self.add("Benchmarker")

@@ -1,13 +1,16 @@
 import customtkinter as ctk
 import tkinter as tk
-from pathlib import Path
+from pathlib import PosixPath, Path
 import ijson
 from data_processing.data_analysis import create_table_plots
+from customtkinter.windows.widgets.ctk_frame import CTkFrame
+from tkinter import Event
+from typing import Any, List, Optional, Union
 
 font_type = {'family': 'Consolas', 'size': 14}
 
 class MyResultsCompareFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -32,7 +35,7 @@ class MyResultsCompareFrame(ctk.CTkFrame):
         self.myresultsscriptframe.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
 
-    def benchmarked_gpus(self, pre_selected):
+    def benchmarked_gpus(self, pre_selected: List[Any]):
         self.pre_selected = pre_selected
         self.gpus_available = []
         self.gpu_shown = []
@@ -146,7 +149,7 @@ class MyResultsCompareFrame(ctk.CTkFrame):
             widget.destroy()
 
 class MyResultsScriptFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -177,7 +180,7 @@ class MyResultsScriptFrame(ctk.CTkFrame):
                                                        fg_color='#141414')
         self.myresultsmodelframe.grid(row=1, column=0, rowspan=2, padx=10, pady=10, sticky="nsew")
 
-    def benchmarked_scripts(self, benchmarked_dir, selected_gpus, pre_selected):
+    def benchmarked_scripts(self, benchmarked_dir: Optional[PosixPath], selected_gpus: Optional[List[str]], pre_selected: None):
         self.scrollable_canvas = ScrollableCanvas(self)
         self.scrollable_canvas.grid(row=0, column=0, sticky="nsew")
 
@@ -315,7 +318,7 @@ class MyResultsScriptFrame(ctk.CTkFrame):
             widget.destroy()
 
 class MyResultsModelFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -345,7 +348,7 @@ class MyResultsModelFrame(ctk.CTkFrame):
                                                          fg_color='#141414')
         self.myresultsparamsframe.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
-    def benchmarked_models(self, benchmarked_dir, selected_gpus, selected_script, pre_selected):
+    def benchmarked_models(self, benchmarked_dir: PosixPath, selected_gpus: List[str], selected_script: List[str], pre_selected: None):
         self.scrollable_canvas = ScrollableCanvas(self)
         self.scrollable_canvas.grid(row=0, column=0, sticky="nsew")
 
@@ -482,7 +485,7 @@ class MyResultsModelFrame(ctk.CTkFrame):
             widget.destroy()
 
 class MyResultsParamsFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -513,7 +516,7 @@ class MyResultsParamsFrame(ctk.CTkFrame):
         self.myresultsexecuteframe.grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
 
 
-    def benchmarked_params(self, benchmarked_dir, selected_gpus, selected_script, selected_model, pre_selected):
+    def benchmarked_params(self, benchmarked_dir: PosixPath, selected_gpus: List[str], selected_script: List[str], selected_model: List[str], pre_selected: None):
         self.scrollable_canvas = ScrollableCanvas(self)
         self.scrollable_canvas.grid(row=0, column=0, sticky="nsew")
 
@@ -657,7 +660,7 @@ class MyResultsParamsFrame(ctk.CTkFrame):
             widget.destroy()
 
 class MyResultsExecuteFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -691,7 +694,7 @@ class MyResultsExecuteFrame(ctk.CTkFrame):
         self.myresultschartframe.grid(row=0, column=2, padx=10, rowspan=3, columnspan=4, pady=10, sticky="nsew")
 
 
-    def benchmarked_execute(self, benchmarked_dir, selected_gpus, selected_script, selected_model, selected_params, pre_selected=None):
+    def benchmarked_execute(self, benchmarked_dir: PosixPath, selected_gpus: List[str], selected_script: List[str], selected_model: List[str], selected_params: List[str], pre_selected: None=None):
         self.scrollable_canvas = ScrollableCanvas(self)
         self.scrollable_canvas.grid(row=0, column=0, sticky="nsew")
 
@@ -853,13 +856,13 @@ class MyResultsExecuteFrame(ctk.CTkFrame):
             widget.destroy()
 
 class MyResultsChartFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.full_table = None
 
-    def benchmarked_charts(self, benchmarked_dir, selected_gpus, selected_script, selected_model, selected_params, selected_execution):
+    def benchmarked_charts(self, benchmarked_dir: PosixPath, selected_gpus: List[str], selected_script: List[str], selected_model: List[str], selected_params: List[str], selected_execution: List[str]):
         charts_available = []
 
         gpu_names = [g_n.split(',')[0].split('/')[-1] for g_n in selected_gpus]
@@ -929,7 +932,7 @@ class MyResultsChartFrame(ctk.CTkFrame):
             widget.destroy()
 
 class ScrollableCanvas(ctk.CTkFrame):
-    def __init__(self, master=None, *args, **kwargs):
+    def __init__(self, master: Optional[Union[MyResultsModelFrame, MyResultsExecuteFrame, MyResultsParamsFrame, MyResultsCompareFrame, MyResultsScriptFrame]]=None, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -970,7 +973,7 @@ class ScrollableCanvas(ctk.CTkFrame):
         self.canvas.bind("<Configure>", self.on_resize)
 
 
-    def on_resize(self, event):
+    def on_resize(self, event: Event):
         if self.min_width != -1:
             max_width = max(self.canvas.winfo_width(), self.min_width)
             max_height = max(self.canvas.winfo_height(), self.min_height)
@@ -982,7 +985,7 @@ class ScrollableCanvas(ctk.CTkFrame):
                                       width=max_width)
 
 
-    def add_content(self, content, row, column, rowspan=1, columnspan=1, padx=10, pady=10, sticky="nsew"):
+    def add_content(self, content: CTkFrame, row: int, column: int, rowspan: int=1, columnspan: int=1, padx: int=10, pady: int=10, sticky: str="nsew"):
         content.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, padx=padx, pady=pady, sticky=sticky)
 
         self.content_frame.update_idletasks()

@@ -8,6 +8,9 @@ import importlib
 from torchvision.models import list_models
 import torchvision
 import os
+from customtkinter.windows.widgets.ctk_frame import CTkFrame
+from tkinter import Event
+from typing import Optional, Union
 
 os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
 
@@ -15,7 +18,7 @@ lock = threading.Lock()
 
 font_type = {'family': 'Consolas', 'size': 14}
 
-def get_nvidia_device_id(device):
+def get_nvidia_device_id(device: torch.device) -> str:
     try:
         result = subprocess.run(['nvidia-smi', '--query-gpu=uuid', '--format=csv,noheader,nounits'],
                                 stdout=subprocess.PIPE,
@@ -46,7 +49,7 @@ def start_benchmark(queue, stop_event, benchmark_file, model_name, device, gpu_n
     stop_event.wait()
 
 class MyActionFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.grid_rowconfigure((0, 1), weight=1)
@@ -233,7 +236,7 @@ class MyActionFrame(ctk.CTkFrame):
             p.terminate()
 
 class MyGPUFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -270,7 +273,7 @@ class MyGPUFrame(ctk.CTkFrame):
 
         self.scrollable_canvas.add_content(self.my_gpu_frame, row=0, column=0)
 
-    def get(self):
+    def get(self) -> int:
         return self.variable.get()
 
     def get_selected_gpu_name(self):
@@ -278,7 +281,7 @@ class MyGPUFrame(ctk.CTkFrame):
         return gpu_name
 
 class MyBenchmarkFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -307,11 +310,11 @@ class MyBenchmarkFrame(ctk.CTkFrame):
 
         self.scrollable_canvas.add_content(self.my_benchmark_frame, row=0, column=0)
 
-    def get(self):
+    def get(self) -> str:
         return self.variable.get()
 
 class MyStatusFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -323,14 +326,14 @@ class MyStatusFrame(ctk.CTkFrame):
                                      border_width=3)
         self.status.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-    def update_status(self, text):
+    def update_status(self, text: str):
         if text != '':
             self.status.insert(index=self.status.index("end"), text=text + "\n")
             self.status.see(index=self.status.index("end"))
         return
 
 class MyCurrentFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure((0, 1), weight=1)
@@ -348,7 +351,7 @@ class MyCurrentFrame(ctk.CTkFrame):
         return
 
 class ScrollableCanvas(ctk.CTkFrame):
-    def __init__(self, master=None, *args, **kwargs):
+    def __init__(self, master: Optional[Union[MyBenchmarkFrame, MyGPUFrame]]=None, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
 
         self.canvas = ctk.CTkCanvas(self,
@@ -388,7 +391,7 @@ class ScrollableCanvas(ctk.CTkFrame):
 
         self.canvas.bind("<Configure>", self.on_resize)
 
-    def on_resize(self, event):
+    def on_resize(self, event: Event):
         if self.min_width != -1:
             max_width = max(self.canvas.winfo_width(), self.min_width)
             max_height = max(self.canvas.winfo_height(), self.min_height)
@@ -399,7 +402,7 @@ class ScrollableCanvas(ctk.CTkFrame):
                                       height=max_height,
                                       width=max_width)
 
-    def add_content(self, content, row, column, rowspan=1, columnspan=1, padx=10, pady=10, sticky="nsew"):
+    def add_content(self, content: CTkFrame, row: int, column: int, rowspan: int=1, columnspan: int=1, padx: int=10, pady: int=10, sticky: str="nsew"):
         content.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, padx=padx, pady=pady, sticky=sticky)
 
         self.content_frame.update_idletasks()

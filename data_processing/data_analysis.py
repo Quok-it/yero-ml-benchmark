@@ -6,8 +6,13 @@ import itertools
 import textwrap
 from datetime import datetime
 from pathlib import Path
+from numpy import float64
+from pandas.core.frame import DataFrame
+from pandas.core.indexes.base import Index
+from pandas.core.series import Series
+from typing import Dict, List, Tuple, Union
 
-def count_significant_digits(number):
+def count_significant_digits(number: Union[Series, float64, float]) -> int:
     str_number = str(number)
 
     if '.' not in str_number:
@@ -18,7 +23,7 @@ def count_significant_digits(number):
 
     return significant_digits
 
-def smallest_decimal_precision_subtract_one(numbers):
+def smallest_decimal_precision_subtract_one(numbers: List[Union[float, Series, float64]]) -> int:
     smallest_precision = float('inf')
 
     for number in numbers:
@@ -121,10 +126,10 @@ def create_results_lists(traceEvents_key, traceEvents_items, gpu_id):
 
     return results_list
 
-def wrap_text(text, width):
+def wrap_text(text: str, width: int) -> str:
     return '\n'.join(textwrap.wrap(text, width, replace_whitespace=False, break_on_hyphens=False))
 
-def apply_wrap_to_dataframe(df, columns, width):
+def apply_wrap_to_dataframe(df: DataFrame, columns: Index, width: int) -> DataFrame:
     for column in columns:
         if df[column].dtype == 'object':
             df[column] = df[column].astype(str).apply(lambda x: wrap_text(x, width))
@@ -138,7 +143,7 @@ It also gets saved into a text file to be reopened in another tab, Open Results.
 Monospace fonts are required to view the table_string text properly
 if the text file is opened elsewhere.
 '''
-def dataframe_to_table(datafrom_list, results_type, timestamp):
+def dataframe_to_table(datafrom_list: List[Dict[str, DataFrame]], results_type: str, timestamp: str) -> str:
     entire_table = []
     for sub_df in datafrom_list:
         for key, df_v in sub_df.items():
@@ -213,7 +218,7 @@ def dataframe_to_table(datafrom_list, results_type, timestamp):
 
     return '\n\n\n\n\n\n\n\n\n\n'.join(entire_table) + '\n\n\n\n\n\n\n\n\n\n'
 
-def create_table_plots(json_paths, results_type):
+def create_table_plots(json_paths: List[str], results_type: str) -> Tuple[str, str]:
 
     entire_comparison = []
 
