@@ -1,15 +1,18 @@
 import multiprocessing
 import customtkinter as ctk
+from monkeytype import trace  # ✅ This is needed for flush!
 from gui.action_frame import MyActionFrame
 from gui.compare_results_frame import MyResultsCompareFrame
 from gui.open_results_frame import MyResultsOpenFrame
 
+
 ctk.set_appearance_mode("dark")
+
 
 class App(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.protocol("WM_DELETE_WINDOW", self.on_close)  # Catch close event
+        self.protocol("WM_DELETE_WINDOW", self.on_close)  # Catch window X click
         self.title("yero-ml-benchmark")
         self.geometry("1920x1080")
         self.configure(bg="#141414")
@@ -17,23 +20,32 @@ class App(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-
-        self.tab_view = MyTabView(master=self,
-                                  anchor="nw",
-                                  width=self.winfo_width(),
-                                  height=self.winfo_height(),
-                                  fg_color="#141414",
-                                  text_color="#FFB000")
+        self.tab_view = MyTabView(
+            master=self,
+            anchor="nw",
+            width=self.winfo_width(),
+            height=self.winfo_height(),
+            fg_color="#141414",
+            text_color="#FFB000"
+        )
         self.tab_view.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
     def on_close(self):
+        # Let the tabs close themselves
         self.tab_view.on_close()
 
+        # ✅ Flush MonkeyType traces before shutting down
+        print("Flushing MonkeyType traces...")
+        trace.DEFAULT_TRACER.flush()
+
+        # Terminate child processes
         for proc in multiprocessing.active_children():
             proc.terminate()
             proc.join()
 
+        # Destroy the window
         self.destroy()
+
 
 class MyTabView(ctk.CTkTabview):
     def __init__(self, master: App, **kwargs):
@@ -51,25 +63,29 @@ class MyTabView(ctk.CTkTabview):
         open_results_tab.grid_columnconfigure((2, 3, 4, 5), weight=1)
         open_results_tab.grid_rowconfigure((0, 1, 2), weight=1)
 
-        self.myactionframe = MyActionFrame(master=benchmarker_tab,
-                                           border_color="#141414",
-                                           border_width=0,
-                                           fg_color="#141414")
+        self.myactionframe = MyActionFrame(
+            master=benchmarker_tab,
+            border_color="#141414",
+            border_width=0,
+            fg_color="#141414"
+        )
         self.myactionframe.grid(row=0, column=3, padx=10, pady=10, sticky="nsew")
 
-
-        self.mycompareresults = MyResultsCompareFrame(master=compare_results_tab,
-                                                      border_color='#FFB000',
-                                                      border_width=3,
-                                                      fg_color='#141414')
+        self.mycompareresults = MyResultsCompareFrame(
+            master=compare_results_tab,
+            border_color='#FFB000',
+            border_width=3,
+            fg_color='#141414'
+        )
         self.mycompareresults.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         self.mycompareresults.benchmarked_gpus(pre_selected=[])
 
-
-        self.myopenresults = MyResultsOpenFrame(master=open_results_tab,
-                                                border_color='#FFB000',
-                                                border_width=3,
-                                                fg_color='#141414')
+        self.myopenresults = MyResultsOpenFrame(
+            master=open_results_tab,
+            border_color='#FFB000',
+            border_width=3,
+            fg_color='#141414'
+        )
         self.myopenresults.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
     def on_close(self):
