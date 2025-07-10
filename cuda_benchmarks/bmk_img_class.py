@@ -64,7 +64,7 @@ driver_info: str = get_nvidia_driver()
 cudnn_version: Union[int, None] = torch.backends.cudnn.version()
 
 def run(
-    queue: Queue[Any],
+    queue: Queue,
     stop_event: Event,
     model_name: str,
     device: torch.device,
