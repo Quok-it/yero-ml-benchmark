@@ -4,12 +4,13 @@ from pathlib import PosixPath, Path
 import ijson
 from data_processing.data_analysis import create_table_plots
 from customtkinter.windows.widgets.ctk_frame import CTkFrame
+from customtkinter.windows.widgets.ctk_checkbox import CTkCheckBox
 from tkinter import Event
 from typing import Any, List, Optional, Union
 
 font_type = {'family': 'Consolas', 'size': 14}
 
-class MyResultsCompareFrame(ctk.CTkFrame):
+class MyResultsCompareFrame(CTkFrame):
     def __init__(self, master: CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
@@ -20,12 +21,12 @@ class MyResultsCompareFrame(ctk.CTkFrame):
         self.benchmarked_dir = None
         self.selected_gpus = None
         self.pre_selected = None
-        self.variable = ctk.StringVar()
+        self.variable = tk.StringVar()
 
         self.scrollable_canvas = ScrollableCanvas(self)
         self.scrollable_canvas.grid(row=0, column=0, sticky="nsew")
 
-        self.gpu_frame = ctk.CTkFrame(self.scrollable_canvas.content_frame,
+        self.gpu_frame = CTkFrame(self.scrollable_canvas.content_frame,
                                       fg_color="#141414")
 
         self.myresultsscriptframe = MyResultsScriptFrame(master=master,
@@ -43,7 +44,7 @@ class MyResultsCompareFrame(ctk.CTkFrame):
         self.scrollable_canvas = ScrollableCanvas(self)
         self.scrollable_canvas.grid(row=0, column=0, sticky="nsew")
 
-        self.gpu_frame = ctk.CTkFrame(self.scrollable_canvas.content_frame, fg_color="#141414")
+        self.gpu_frame = CTkFrame(self.scrollable_canvas.content_frame, fg_color="#141414")
         device_id = ''
 
         current_path = Path(__file__).resolve()
@@ -86,7 +87,7 @@ class MyResultsCompareFrame(ctk.CTkFrame):
         unique_tuples = {tuple(sublist) for sublist in self.gpus_available}
         self.gpus_available = [list(tup) for tup in unique_tuples]
 
-        self.checkbox_gpu_refresh = ctk.CTkCheckBox(self.gpu_frame,
+        self.checkbox_gpu_refresh = CTkCheckBox(self.gpu_frame,
                                                     text='Refresh the GPU List',
                                                     onvalue='Refreshing',
                                                     offvalue='ignore',

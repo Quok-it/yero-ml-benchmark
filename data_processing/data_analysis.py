@@ -10,7 +10,7 @@ from numpy import float64
 from pandas.core.frame import DataFrame
 from pandas.core.indexes.base import Index
 from pandas.core.series import Series
-from typing import Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 def count_significant_digits(number: Union[Series, float64, float]) -> int:
     str_number = str(number)
@@ -23,7 +23,7 @@ def count_significant_digits(number: Union[Series, float64, float]) -> int:
 
     return significant_digits
 
-def smallest_decimal_precision_subtract_one(numbers: List[Union[float, Series, float64]]) -> int:
+def smallest_decimal_precision_subtract_one(numbers: List[Union[float, Series, float64]]) -> float | int:
     smallest_precision = float('inf')
 
     for number in numbers:
@@ -651,6 +651,9 @@ def create_table_plots(json_paths: List[str], results_type: str) -> Tuple[str, s
             apply_wrap_to_dataframe(df=v, columns=v.columns, width=50)
 
     timestamp = str(datetime.today().replace(microsecond=0)).replace(' ', '_')
+    
+    # Generate CSV Files
+    generate_csvs(dataframes_list, results_type, timestamp)
 
     table_string = dataframe_to_table(dataframes_list, results_type, timestamp)
 
@@ -1327,5 +1330,49 @@ def create_table_plots(json_paths: List[str], results_type: str) -> Tuple[str, s
 
                     plt.clf()
                     plt.close()
-
     return table_string, graph_dir
+
+def _sanitize_filename(name: str) -> str:
+    # Replaces spaces and special characters with underscores
+    name = name.replace(' ', '_').replace('(', '').replace(')', '')
+    name = name.replace(':', '').replace('/', '_per_')
+    return name.lower()
+
+def _unwrap_text_in_dataframe(df: DataFrame) -> DataFrame:
+    """
+    Removes newline characters from string columns in a DataFrame for csv output
+    """
+    df_copy = df.copy()
+    for column in df_copy.columns:
+        if df_copy[column].dtype == 'object':
+            # Replaces newline characters with a space
+            df_copy[column] = df_copy[column].astype(str).str.replace('\n', ' ', regex=False)
+    return df_copy
+
+def generate_csvs(
+    dataframes_list: List[Dict[str, DataFrame]],
+    results_type: str,
+    timestamp: str
+) -> None:
+    """
+    Generates a CSV file for each DataFrame in the list.
+
+    Args:
+        dataframes_list: A list of dictionaries, where each dictionary 
+        contains a benchmark name and its corresponding DataFrame.
+        
+        results_type: The top-level directory name for the results.
+        timestamp: The timestamp string for the current benchmark run.
+    Returns: 
+        void
+    """
+    csv_path = Path(f"benchmark_results/{results_type}/{timestamp}/csvs")
+    csv_path.mkdir(parents=True, exist_ok=True)
+
+    for df_dict in dataframes_list:
+        for df_name, df_value in df_dict.items():
+            unwrapped_df = _unwrap_text_in_dataframe(df_value)
+            sanitized_name = _sanitize_filename(df_name)
+            file_path = csv_path / f"{sanitized_name}.csv"
+            unwrapped_df.to_csv(file_path, index=False)
+            print(f"Successfully generated CSV: {file_path}")

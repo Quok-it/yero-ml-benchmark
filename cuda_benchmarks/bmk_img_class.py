@@ -1,12 +1,12 @@
 import torch
-from torchvision import transforms
-from torchvision.models import get_model
+from torchvision.transforms import transforms
+from torchvision.models._api import get_model
 import torch.optim as optim
 from pathlib import Path
 import time
 import subprocess
 import os
-from typing import Any, Union
+from typing import Union
 from torch import nn, optim as torch_optim
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event

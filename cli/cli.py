@@ -62,7 +62,7 @@ def main() -> None:
     parser.add_argument('--list-models', action='store_true', help='List all available models')
     parser.add_argument('--model', type=str, help='The model to benchmark')
     parser.add_argument('--gpu', type=int, default=0, help='The GPU to use for the benchmark (default: 0)')
-    parser.add_argument('--all', action='store_true', help='Run benchmarks on all supported models')
+    parser.add_argument('--all', action='store_true', help='Run benchmarks on all supported models (NOT RECOMMENDED THIS COULD TAKE HOURS)')
     args: argparse.Namespace = parser.parse_args()
 
     if args.list_gpus:

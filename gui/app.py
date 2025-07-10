@@ -1,5 +1,6 @@
 import multiprocessing
 import customtkinter as ctk
+from customtkinter.windows.widgets.ctk_tabview import CTkTabview
 from gui.action_frame import MyActionFrame
 from gui.compare_results_frame import MyResultsCompareFrame
 from gui.open_results_frame import MyResultsOpenFrame
@@ -8,7 +9,7 @@ from gui.open_results_frame import MyResultsOpenFrame
 ctk.set_appearance_mode("dark")
 
 
-class App(ctk.CTk):
+class App(ctk.windows.ctk_tk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.protocol("WM_DELETE_WINDOW", self.on_close)  # Catch window X click
@@ -40,7 +41,7 @@ class App(ctk.CTk):
         self.destroy()
 
 
-class MyTabView(ctk.CTkTabview):
+class MyTabView(CTkTabview):
     def __init__(self, master: App, **kwargs):
         super().__init__(master, **kwargs)
 
