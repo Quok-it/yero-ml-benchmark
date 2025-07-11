@@ -1,3 +1,4 @@
+import logging
 import torch
 import argparse
 import multiprocessing
@@ -11,6 +12,7 @@ from typing import List, Any
 from torch.multiprocessing import Queue
 from multiprocessing.synchronize import Event
 
+from cli.export_results import Results
 from cuda_benchmarks import bmk_img_class
 
 class CLI:
@@ -52,51 +54,50 @@ class CLI:
         benchmarking_module.run(queue, stop_event, model_name, device, gpu_name, start_time)
         stop_event.wait()
 
+    def _run_benchmark(self, args: argparse.Namespace):
+            if args.list_gpus:
+                for i in range(torch.cuda.device_count()):
+                    print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+                return
+
+            if args.list_models:
+                print("\n".join(list_models(module=torchvision.models)))
+                return
+
+            if not args.model and not args.all:
+                print("Please specify a model with --model <model_name> or use --all.")
+                return
+
+            models_to_benchmark = list_models(module=torchvision.models) if args.all else [args.model]
+            device = torch.device(f'cuda:{args.gpu}')
+            device_id = self.get_nvidia_device_id(device)
+            gpu_name = f"{torch.cuda.get_device_properties(args.gpu).name}\n{device_id}"
+
+            for model_name in tqdm(models_to_benchmark, desc="Benchmarking Models"):
+                logging.info(f"Running benchmark: {model_name} on {torch.cuda.get_device_name(args.gpu)}")
+                queue: Queue = multiprocessing.Queue()
+                stop_event: Event = multiprocessing.Event()
+                bmk_img_class.run(queue, stop_event, model_name, device, gpu_name, time.time())
+    
 
     def main(self) -> None:
         """
-        Main function to run the CLI tool. 🚀
+        Main function to run the CLI tool.
         """
         parser = argparse.ArgumentParser(description="CLI for the Yero ML Benchmark tool")
-        parser.add_argument('--list-gpus', action='store_true', help='List all available GPUs')
-        parser.add_argument('--list-models', action='store_true', help='List all available models')
-        parser.add_argument('--model', type=str, help='The model to benchmark')
-        parser.add_argument('--gpu', type=int, default=0, help='The GPU to use for the benchmark (default: 0)')
-        parser.add_argument('--all', action='store_true', help='Run benchmarks on all supported models (NOT RECOMMENDED THIS COULD TAKE HOURS)')
+        subparsers = parser.add_subparsers(dest='command', required=True, help="Available commands")
+
+        parser_run = subparsers.add_parser('run', help='Run a new benchmark.')
+        parser_run.add_argument('--list-gpus', action='store_true', help='List all available GPUs')
+        parser_run.add_argument('--list-models', action='store_true', help='List all available models')
+        parser_run.add_argument('--model', type=str, help='The model to benchmark')
+        parser_run.add_argument('--gpu', type=int, default=0, help='The GPU to use for the benchmark (default: 0)')
+        parser_run.add_argument('--all', action='store_true', help='Run benchmarks on all supported models (NOT RECOMMENDED THIS COULD TAKE HOURS)')
+        parser_run.set_defaults(func=self._run_benchmark)
+
+        parser_results = subparsers.add_parser('results', help='Analyze existing benchmark results.')
+        Results(parser_results)
+        
         args: argparse.Namespace = parser.parse_args()
+        args.func(args)
 
-        if args.list_gpus:
-            for i in range(torch.cuda.device_count()):
-                print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
-            return
-
-        if args.list_models:
-            classification_models: List[str] = list_models(module=torchvision.models)
-            for model in classification_models:
-                print(model)
-            return
-
-        if not args.model and not args.all:
-            print("Please specify a model to benchmark with --model <model_name> or use --all.")
-            return
-
-        if args.all:
-            classification_models: List[str] = list_models(module=torchvision.models)
-            for model_name in tqdm(classification_models, desc="All Models"):
-                device: torch.device = torch.device(f'cuda:{args.gpu}')
-                device_id: str = self.get_nvidia_device_id(device)
-                # the return type for this is ignored torch, not good
-                gpu_name: str = f"{torch.cuda.get_device_properties(args.gpu).name}\n{device_id}" # type: ignore
-                queue: "Queue[Any]" = multiprocessing.Queue()
-                stop_event: Event = multiprocessing.Event()
-                bmk_img_class.run(queue, stop_event, model_name, device, gpu_name, time.time())
-            return
-
-        model_name: str = args.model
-        device: torch.device = torch.device(f'cuda:{args.gpu}')
-        device_id: str = self.get_nvidia_device_id(device)
-        gpu_name: str = f"{torch.cuda.get_device_properties(args.gpu).name}\n{device_id}" # type: ignore
-        queue: "Queue[Any]" = multiprocessing.Queue()
-        stop_event: Event = multiprocessing.Event()
-
-        bmk_img_class.run(queue, stop_event, model_name, device, gpu_name, time.time())

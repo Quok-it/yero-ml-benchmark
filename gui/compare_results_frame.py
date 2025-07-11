@@ -1,3 +1,5 @@
+import logging
+import sys
 import customtkinter as ctk
 import tkinter as tk
 from pathlib import PosixPath, Path
@@ -6,7 +8,7 @@ from data_processing.data_analysis import create_table_plots
 from customtkinter.windows.widgets.ctk_frame import CTkFrame
 from customtkinter.windows.widgets.ctk_checkbox import CTkCheckBox
 from tkinter import Event
-from typing import Any, List, Optional, Union
+from typing import Any, Generator, List, Optional, Union
 
 font_type = {'family': 'Consolas', 'size': 14}
 
@@ -198,7 +200,7 @@ class MyResultsScriptFrame(ctk.CTkFrame):
             return
 
         gpu_names = [g_n.split(',')[0].split('/')[-1] for g_n in self.selected_gpus]
-        device_ids = [g_n.split(',')[1] for g_n in self.selected_gpus]
+        #device_ids = [g_n.split(',')[1] for g_n in self.selected_gpus]
 
         '''
         This loop looks through the GPU(s) selected previously 
@@ -862,55 +864,64 @@ class MyResultsChartFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.full_table = None
-
+        
+    def check_if_requested_gpus_have_benchmark(self, benchmarked_dir: PosixPath, selected_gpus: list[str]):
+        selected_gpu_names = [g_n.split(',')[0].split('/')[-1] for g_n in selected_gpus]
+        #device_ids = [g_n.split(',')[1] for g_n in selected_gpus]
+        selected_benchmark_path = Path(benchmarked_dir)
+        gpu_ids_needed : set[str] = set()
+        for gpu_folder in selected_benchmark_path.iterdir():
+            gpu_name = str(gpu_folder).split('/')[-1]
+            
+            if gpu_name not in selected_gpu_names:
+                logging.warning(f"GPU {gpu_name} has not had benchmarks ran")
+                continue
+            # TODO see if this works with 2 of the same card
+            gpu_ids_needed.add(next(g_n.split(',')[1] for g_n in selected_gpus if gpu_name == g_n.split(',')[0].split('/')[-1]))
+        return gpu_ids_needed
+            
+    def process_trace_file(self, trace_file: Path, gpu_ids_needed: set[str], selected_execution: list[str]) -> list[str]:
+        charts_available : list[str] = []
+        with open(trace_file, 'r') as f:
+                parser = ijson.parse(f)
+                device_id = None
+                try:
+                    for prefix, _, value in parser:
+                        if prefix != 'benchmark_info.device_id':
+                            continue
+                        device_id = value
+                        if device_id in gpu_ids_needed:
+                            e_name = str(trace_file).split('/')[-1].split('.')[0].split('_')[-1]
+                            e_full_name = str(trace_file)
+                            if e_name in selected_execution:
+                                charts_available.append(e_full_name)
+                        return charts_available
+                    return charts_available
+                except Exception as e:
+                    logging.error(f"Error opening file {e}") 
+                    raise FileNotFoundError
+        
     def benchmarked_charts(self, benchmarked_dir: PosixPath, selected_gpus: List[str], selected_script: List[str], selected_model: List[str], selected_params: List[str], selected_execution: List[str]):
-        charts_available = []
 
-        gpu_names = [g_n.split(',')[0].split('/')[-1] for g_n in selected_gpus]
-        device_ids = [g_n.split(',')[1] for g_n in selected_gpus]
 
         '''
         This loop looks through the GPU(s), script(s), model(s), param(s), and execute(s) selected previously 
         and finds shared models between the execute(s) selected.
         It confirms it by the valid json trace files.
         '''
-        selected_benchmark_path = Path(benchmarked_dir)
-        for gpu_folder in selected_benchmark_path.iterdir():
-            g_name = str(gpu_folder).split('/')[-1]
-            if g_name in gpu_names:
-                gpu_id_needed = [g_n.split(',')[1] for g_n in selected_gpus if g_name == g_n.split(',')[0].split('/')[-1]]
-                for script_folder in gpu_folder.iterdir():
-                    if script_folder.is_dir():
-                        s_name = str(script_folder).split('/')[-1]
-                        if s_name in selected_script:
-                            for model_folder in script_folder.iterdir():
-                                if model_folder.is_dir():
-                                    m_name = str(model_folder).split('/')[-1]
-                                    if m_name in selected_model:
-                                        for params_folder in model_folder.iterdir():
-                                            if params_folder.is_dir():
-                                                p_name = str(params_folder).split('/')[-1]
-                                                if p_name in selected_params:
-                                                    for trace_file in params_folder.iterdir():
-                                                        if trace_file.is_file():
-                                                            with open(trace_file, 'r') as f:
-                                                                parser = ijson.parse(f)
-                                                                device_id = None
-                                                                try:
-                                                                    for prefix, event, value in parser:
-                                                                        if prefix == 'benchmark_info.device_id':
-                                                                            device_id = value
-                                                                            if device_id in gpu_id_needed:
-                                                                                e_name = str(trace_file).split('/')[-1].split('.')[0].split('_')[-1]
-                                                                                e_full_name = str(trace_file)
-                                                                                if e_name in selected_execution:
-                                                                                    charts_available.append(e_full_name)
-                                                                            break
-                                                                except Exception as e:
-                                                                    continue
-
-                                                                if device_id is None:
-                                                                    continue
+        charts_available=[]
+        gpu_ids_needed : set[str] = self.check_if_requested_gpus_have_benchmark(benchmarked_dir, selected_gpus)
+        gpu_folders : list[Generator[Path, None, None]]= [Path(benchmarked_dir).iterdir()]  
+        script_folders : list[Path] = [f for gen in gpu_folders for f in gen if f.is_dir() and f.name in selected_script] 
+        model_folders : list[Path] = [f for script_folder in script_folders for f in script_folder.iterdir() if f.is_dir() and f.name in selected_model]
+        param_folders : list[Path] = [f for model_folder in model_folders for f in model_folder.iterdir() if f.is_dir() and f.name in selected_params]
+        
+        for trace_file in param_folders:
+            if not trace_file.is_file():
+                logging.warning(f"?? something is not a file but registered as a trace_file maybe this is intentional?: {trace_file}")
+                continue
+            
+            charts_available.extend(self.process_trace_file(trace_file, gpu_ids_needed, selected_execution))
 
         table_string, graph_dir = create_table_plots(charts_available, 'results_compare')
         graph_dir = 'yero-ml-benchmark/benchmark_results' + graph_dir.split('benchmark_results')[1]
